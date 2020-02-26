@@ -92,8 +92,7 @@ class HMM:
                 for i in range(self.M):
                     for j in range(self.M):
                         for t in range(T - 1):
-                            a_num[i, j] += alphas[n][t, i] * betas[n][t + 1, j] * self.A[i, j] * self.B[j, x[t + 1]] / \
-                                           scales[n][t + 1]
+                            a_num[i, j] += alphas[n][t, i] * betas[n][t + 1, j] * self.A[i, j] * self.B[j, x[t + 1]] / scales[n][t + 1]
                 # a_num += a_num_n
 
                 # numerator for B
@@ -132,24 +131,42 @@ class HMM:
     def log_likelihood_multi(self, X):
         return np.array([self.log_likelihood(x) for x in X])
 
+    # def get_state_sequence(self, x):
+    #     # returns the most likely state sequence given observed sequence x
+    #     # using the Viterbi algorithm
+    #     T = len(x)
+    #     delta = np.zeros((T, self.M))
+    #     psi = np.zeros((T, self.M))
+    #     delta[0] = np.log(self.pi) + np.log(self.B[:, x[0]])
+    #     for t in range(1, T):
+    #         for j in range(self.M):
+    #             delta[t, j] = np.max(delta[t - 1] + np.log(self.A[:, j])) + np.log(self.B[j, x[t]])
+    #             psi[t, j] = np.argmax(delta[t - 1] + np.log(self.A[:, j]))
+    #
+    #     # backtrack
+    #     states = np.zeros(T, dtype=np.int32)
+    #     states[T - 1] = np.argmax(delta[T - 1])
+    #     for t in range(T - 2, -1, -1):
+    #         states[t] = psi[t + 1, states[t + 1]]
+    #     return states
     def get_state_sequence(self, x):
-        # returns the most likely state sequence given observed sequence x
-        # using the Viterbi algorithm
         T = len(x)
         delta = np.zeros((T, self.M))
         psi = np.zeros((T, self.M))
-        delta[0] = np.log(self.pi) + np.log(self.B[:, x[0]])
+        delta[0] = np.log(self.pi) + np.log(self.B[:,x[0]])
         for t in range(1, T):
             for j in range(self.M):
-                delta[t, j] = np.max(delta[t - 1] + np.log(self.A[:, j])) + np.log(self.B[j, x[t]])
-                psi[t, j] = np.argmax(delta[t - 1] + np.log(self.A[:, j]))
+                delta[t, j] = np.max(delta[t-1] + np.log(self.A[:,j])) + np.log(self.B[j, x[t]])
+                psi[t,j] = np.argmax(delta[t-1] + np.log(self.A[:,j]))
 
-        # backtrack
+        #backtrack
         states = np.zeros(T, dtype=np.int32)
-        states[T - 1] = np.argmax(delta[T - 1])
-        for t in range(T - 2, -1, -1):
-            states[t] = psi[t + 1, states[t + 1]]
+        states[T-1] = np.argmax(delta[T-1])
+
+        for t in range(T-2, -1, -1):
+            states[t] = psi[t+1, states[t+1]]
         return states
+
 
 
 def fit_coin():
